@@ -30,17 +30,17 @@
 #
 ******************************************************************************/
 #include "DEV_Config.h"
-#include "stm32f1xx_hal_spi.h"
+#include "stm32f4xx_hal_spi.h"
 
-extern SPI_HandleTypeDef hspi1;
+extern SPI_HandleTypeDef hspi2;
 void DEV_SPI_WriteByte(UBYTE value)
 {
-    HAL_SPI_Transmit(&hspi1, &value, 1, 1000);
+    HAL_SPI_Transmit(&hspi2, &value, 1, 1000);
 }
 
 void DEV_SPI_Write_nByte(UBYTE *value, UDOUBLE len)
 {
-    HAL_SPI_Transmit(&hspi1, value, len, 1000);
+    HAL_SPI_Transmit(&hspi2, value, len, 1000);
 }
 
 void DEV_GPIO_Mode(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, UWORD Mode)
@@ -63,71 +63,21 @@ void DEV_GPIO_Mode(GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin, UWORD Mode)
 
 void DEV_GPIO_Init()
 {
-    HAL_SPI_MspDeInit(&hspi1);
+    HAL_SPI_MspDeInit(&hspi2);
     
-    //HAL_SPI_DeInit(&hspi1); 
+    //HAL_SPI_DeInit(&hspi2); 
 //    __HAL_RCC_SPI1_CLK_DISABLE();
 //    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_5|GPIO_PIN_7);
 }
 
 void DEV_SPI_Init()
 {
-    HAL_SPI_MspInit(&hspi1);
-    //HAL_SPI_DeInit(&hspi1); 
+    HAL_SPI_MspInit(&hspi2);
+    //HAL_SPI_DeInit(&hspi2); 
 //    __HAL_RCC_SPI1_CLK_DISABLE();
 //    HAL_GPIO_DeInit(GPIOA, GPIO_PIN_5|GPIO_PIN_7);
 }
 
-
-void DEV_SPI_SendData(UBYTE Reg)
-{
-	UBYTE i,j=Reg;
-	DEV_GPIO_Mode(EPD_MOSI_PIN, 1);
-    DEV_GPIO_Mode(EPD_SCLK_PIN, 1);
-	DEV_Digital_Write(EPD_CS_PIN, 0);
-	for(i = 0; i<8; i++)
-    {
-        DEV_Digital_Write(EPD_SCLK_PIN, 0);     
-        if (j & 0x80)
-        {
-            DEV_Digital_Write(EPD_MOSI_PIN, 1);
-        }
-        else
-        {
-            DEV_Digital_Write(EPD_MOSI_PIN, 0);
-        }
-        
-        DEV_Digital_Write(EPD_SCLK_PIN, 1);
-        j = j << 1;
-    }
-	DEV_Digital_Write(EPD_SCLK_PIN, 0);
-	DEV_Digital_Write(EPD_CS_PIN, 1);
-}
-
-UBYTE DEV_SPI_ReadData()
-{
-	UBYTE i,j=0xff;
-	DEV_GPIO_Mode(EPD_MOSI_PIN, 0);
-    DEV_GPIO_Mode(EPD_SCLK_PIN, 1);
-	DEV_Digital_Write(EPD_CS_PIN, 0);
-	for(i = 0; i<8; i++)
-	{
-		DEV_Digital_Write(EPD_SCLK_PIN, 0);
-		j = j << 1;
-		if (DEV_Digital_Read(EPD_MOSI_PIN))
-		{
-            j = j | 0x01;
-		}
-		else
-		{
-            j= j & 0xfe;
-		}
-		DEV_Digital_Write(EPD_SCLK_PIN, 1);
-	}
-	DEV_Digital_Write(EPD_SCLK_PIN, 0);
-	DEV_Digital_Write(EPD_CS_PIN, 1);
-	return j;
-}
 
 int DEV_Module_Init(void)
 {
